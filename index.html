@@ -3,684 +3,1864 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>البطاقة الصحية الرقمية الذكية</title>
+    <title>المنصة الوطنية للصحة الذكية - نموذج أولي</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'arabic': ['Segoe UI', 'Tahoma', 'Arial', 'sans-serif']
+                    },
+                    colors: {
+                        'health-blue': '#2563eb',
+                        'health-green': '#10b981',
+                        'health-light': '#f0f9ff'
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        * {
-            font-family: 'Cairo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        body { 
+            font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
         }
-
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
+        .fade-in { animation: fadeIn 0.6s ease-out; }
+        @keyframes fadeIn { 
+            from { opacity: 0; transform: translateY(30px); } 
+            to { opacity: 1; transform: translateY(0); } 
         }
-
-        .health-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(15px);
-            border-radius: 24px;
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            overflow: hidden;
-            max-width: 1200px;
-            margin: 0 auto;
+        .pulse-glow { 
+            animation: pulseGlow 2s infinite;
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
         }
-
-        .card-header {
-            background: linear-gradient(135deg, #3B82F6, #8B5CF6);
-            color: white;
-            padding: 2rem;
-            position: relative;
-            overflow: hidden;
+        @keyframes pulseGlow { 
+            0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(239, 68, 68, 0.5); } 
+            50% { transform: scale(1.05); box-shadow: 0 0 30px rgba(239, 68, 68, 0.8); } 
         }
-
-        .card-header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-            animation: pulse 4s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 0.5; }
-            50% { transform: scale(1.1); opacity: 0.8; }
-        }
-
-        @keyframes heartbeat {
-            0%, 100% { transform: scale(1); }
-            25% { transform: scale(1.1); }
-            50% { transform: scale(1); }
-            75% { transform: scale(1.05); }
-        }
-
-        .patient-info {
-            display: grid;
-            grid-template-columns: 1fr auto;
-            gap: 2rem;
-            align-items: center;
-            position: relative;
-            z-index: 2;
-        }
-
-        .qr-code {
-            width: 120px;
-            height: 120px;
-            background: white;
-            border-radius: 12px;
-            padding: 8px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        .card-hover {
             transition: all 0.3s ease;
         }
-
-        .qr-code:hover {
-            transform: scale(1.05);
-            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3);
-        }
-
-        .vitals-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-            padding: 2rem;
-        }
-
-        .vital-card {
-            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
-            border-radius: 16px;
-            padding: 1.5rem;
-            text-align: center;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .vital-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: var(--accent-color, #3B82F6);
-            transform: scaleX(0);
-            transition: transform 0.3s ease;
-        }
-
-        .vital-card:hover::before {
-            transform: scaleX(1);
-        }
-
-        .vital-card:hover {
+        .card-hover:hover {
             transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-            border-color: var(--accent-color, #3B82F6);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
         }
-
-        .vital-card.normal {
-            --accent-color: #10B981;
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
-
-        .vital-card.warning {
-            --accent-color: #F59E0B;
+        .notification {
+            animation: slideIn 0.5s ease-out;
         }
-
-        .vital-card.danger {
-            --accent-color: #EF4444;
-        }
-
-        .vital-icon {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 1rem;
-            font-size: 1.5rem;
-            color: white;
-            background: var(--accent-color, #3B82F6);
-        }
-
-        .vital-value {
-            font-size: 2rem;
-            font-weight: bold;
-            color: var(--accent-color, #3B82F6);
-            margin-bottom: 0.5rem;
-        }
-
-        .vital-label {
-            color: #64748b;
-            font-weight: 500;
-            margin-bottom: 0.5rem;
-        }
-
-        .vital-status {
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.875rem;
-            font-weight: 500;
-            background: var(--accent-color, #3B82F6);
-            color: white;
-            opacity: 0.9;
-        }
-
-        .medications-section {
-            padding: 2rem;
-            background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
-        }
-
-        .medication-card {
-            background: white;
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-            border-right: 4px solid #3B82F6;
-            transition: all 0.3s ease;
-        }
-
-        .medication-card:hover {
-            transform: translateX(-5px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-        }
-
-        .medication-card.due {
-            border-right-color: #EF4444;
-            background: linear-gradient(135deg, #fef2f2, #ffffff);
-        }
-
-        .medication-card.taken {
-            border-right-color: #10B981;
-            background: linear-gradient(135deg, #f0fdf4, #ffffff);
-        }
-
-        .medication-header {
-            display: flex;
-            justify-content: between;
-            align-items: center;
-            margin-bottom: 1rem;
-        }
-
-        .medication-name {
-            font-size: 1.25rem;
-            font-weight: bold;
-            color: #1e293b;
-        }
-
-        .medication-status {
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-size: 0.875rem;
-            font-weight: 600;
-        }
-
-        .status-due {
-            background: #fee2e2;
-            color: #dc2626;
-        }
-
-        .status-taken {
-            background: #dcfce7;
-            color: #16a34a;
-        }
-
-        .status-upcoming {
-            background: #dbeafe;
-            color: #2563eb;
-        }
-
-        .emergency-info {
-            background: linear-gradient(135deg, #dc2626, #ef4444);
-            color: white;
-            padding: 2rem;
-            margin: 2rem;
-            border-radius: 16px;
-            text-align: center;
-        }
-
-        .emergency-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            animation: heartbeat 2s infinite;
-        }
-
-        .allergies-section {
-            padding: 2rem;
-            background: linear-gradient(135deg, #fef3c7, #fde68a);
-        }
-
-        .allergy-tag {
-            display: inline-block;
-            background: #dc2626;
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            margin: 0.25rem;
-            font-weight: 500;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 1rem;
-            padding: 2rem;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .action-btn {
-            background: linear-gradient(135deg, #3B82F6, #1D4ED8);
-            color: white;
-            border: none;
-            padding: 1rem 2rem;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .action-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
-        }
-
-        .action-btn.secondary {
-            background: linear-gradient(135deg, #10B981, #059669);
-        }
-
-        .action-btn.danger {
-            background: linear-gradient(135deg, #EF4444, #DC2626);
-        }
-
-        @media (max-width: 768px) {
-            body {
-                padding: 10px;
-            }
-            
-            .patient-info {
-                grid-template-columns: 1fr;
-                text-align: center;
-                gap: 1rem;
-            }
-            
-            .vitals-grid {
-                grid-template-columns: 1fr;
-                padding: 1rem;
-            }
-            
-            .qr-code {
-                width: 100px;
-                height: 100px;
-                margin: 0 auto;
-            }
-            
-            .card-header {
-                padding: 1.5rem;
-            }
-            
-            .action-buttons {
-                flex-direction: column;
-                padding: 1rem;
-            }
-        }
-
-        .floating-heart {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            color: #ef4444;
-            font-size: 2rem;
-            animation: heartbeat 2s infinite;
-            z-index: 1000;
-        }
-
-        .last-updated {
-            text-align: center;
-            padding: 1rem;
-            color: #64748b;
-            font-size: 0.875rem;
-            border-top: 1px solid #e2e8f0;
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
     </style>
 </head>
-<body>
-    <div class="floating-heart">
-        <i class="fas fa-heartbeat"></i>
-    </div>
-
-    <div class="health-card">
-        <!-- Header with Patient Info -->
-        <div class="card-header">
-            <div class="patient-info">
+<body class="min-h-screen">
+    <!-- Login Screen -->
+    <div id="loginScreen" class="min-h-screen flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+            <div class="text-center mb-8">
+                <div class="bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-full p-4 w-20 h-20 mx-auto mb-4 flex items-center justify-center">
+                    <i class="fas fa-heartbeat text-2xl"></i>
+                </div>
+                <h1 class="text-2xl font-bold text-gray-800 mb-2">المنصة الوطنية للصحة الذكية</h1>
+                <p class="text-gray-600">نموذج أولي - رؤية 2030</p>
+            </div>
+            
+            <div class="space-y-4">
                 <div>
-                    <h1 class="text-3xl font-bold mb-2">أحمد محمد العلي</h1>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                        <div>
-                            <span class="opacity-80">العمر:</span>
-                            <span class="font-semibold mr-2">45 سنة</span>
-                        </div>
-                        <div>
-                            <span class="opacity-80">الجنس:</span>
-                            <span class="font-semibold mr-2">ذكر</span>
-                        </div>
-                        <div>
-                            <span class="opacity-80">فصيلة الدم:</span>
-                            <span class="font-semibold mr-2">A+</span>
-                        </div>
-                        <div>
-                            <span class="opacity-80">الرقم الطبي:</span>
-                            <span class="font-semibold mr-2">MRN-2024-001</span>
-                        </div>
-                    </div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">نوع المستخدم</label>
+                    <select id="userType" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="patient">مريض</option>
+                        <option value="doctor">طبيب</option>
+                    </select>
                 </div>
                 
-                <div class="qr-code cursor-pointer hover:scale-110 transition-transform" onclick="window.open('https://qrco.de/bgEIlF', '_blank')" title="امسح للوصول السريع">
-                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=https://qrco.de/bgEIlF" 
-                         alt="Scan for Health Card Access" 
-                         class="w-full h-full rounded-lg">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">اختر المستخدم</label>
+                    <select id="userName" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <!-- Options will be populated by JavaScript -->
+                    </select>
                 </div>
+                
+                <button onclick="login()" class="w-full bg-gradient-to-r from-blue-600 to-blue-800 text-white py-3 rounded-lg font-semibold hover:from-blue-700 hover:to-blue-900 transition-all duration-300 transform hover:scale-105">
+                    <i class="fas fa-sign-in-alt ml-2"></i>
+                    دخول
+                </button>
             </div>
         </div>
+    </div>
 
-        <!-- Vital Signs -->
-        <div class="vitals-grid">
-            <div class="vital-card normal">
-                <div class="vital-icon">
-                    <i class="fas fa-heartbeat"></i>
+    <!-- Main Application -->
+    <div id="mainApp" class="hidden">
+        <!-- Header -->
+        <header class="bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 text-white shadow-xl sticky top-0 z-50">
+            <div class="container mx-auto px-4 py-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4 space-x-reverse">
+                        <div class="bg-white text-blue-600 rounded-full p-3 shadow-lg">
+                            <i class="fas fa-heartbeat text-xl"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-xl font-bold">المنصة الوطنية للصحة الذكية</h1>
+                            <p class="text-blue-200 text-sm">نموذج أولي - رؤية 2030</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4 space-x-reverse">
+                        <div id="userInfo" class="text-left">
+                            <!-- User info will be populated -->
+                        </div>
+                        <button onclick="logout()" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg transition-colors">
+                            <i class="fas fa-sign-out-alt ml-1"></i>
+                            خروج
+                        </button>
+                    </div>
                 </div>
-                <div class="vital-value">78</div>
-                <div class="vital-label">معدل النبض</div>
-                <div class="vital-status">طبيعي</div>
-                <div class="text-xs text-gray-500 mt-2">نبضة/دقيقة</div>
             </div>
+        </header>
 
-            <div class="vital-card warning">
-                <div class="vital-icon">
-                    <i class="fas fa-thermometer-half"></i>
+        <!-- Navigation -->
+        <nav class="bg-white shadow-lg sticky top-16 z-40">
+            <div class="container mx-auto px-4">
+                <div class="flex flex-wrap justify-center gap-2 py-4" id="navigation">
+                    <!-- Navigation will be populated based on user type -->
                 </div>
-                <div class="vital-value">145/92</div>
-                <div class="vital-label">ضغط الدم</div>
-                <div class="vital-status">مرتفع</div>
-                <div class="text-xs text-gray-500 mt-2">mmHg</div>
             </div>
+        </nav>
 
-            <div class="vital-card normal">
-                <div class="vital-icon">
-                    <i class="fas fa-lungs"></i>
-                </div>
-                <div class="vital-value">97%</div>
-                <div class="vital-label">الأكسجين</div>
-                <div class="vital-status">طبيعي</div>
-                <div class="text-xs text-gray-500 mt-2">SpO2</div>
-            </div>
-
-            <div class="vital-card danger">
-                <div class="vital-icon">
-                    <i class="fas fa-cube"></i>
-                </div>
-                <div class="vital-value">195</div>
-                <div class="vital-label">السكر</div>
-                <div class="vital-status">مرتفع</div>
-                <div class="text-xs text-gray-500 mt-2">mg/dL</div>
-            </div>
-
-            <div class="vital-card normal">
-                <div class="vital-icon">
-                    <i class="fas fa-weight"></i>
-                </div>
-                <div class="vital-value">78.5</div>
-                <div class="vital-label">الوزن</div>
-                <div class="vital-status">مثالي</div>
-                <div class="text-xs text-gray-500 mt-2">كيلوجرام</div>
-            </div>
-
-            <div class="vital-card normal">
-                <div class="vital-icon">
-                    <i class="fas fa-thermometer-quarter"></i>
-                </div>
-                <div class="vital-value">36.8°</div>
-                <div class="vital-label">درجة الحرارة</div>
-                <div class="vital-status">طبيعي</div>
-                <div class="text-xs text-gray-500 mt-2">مئوية</div>
-            </div>
+        <!-- Notifications -->
+        <div id="notifications" class="fixed top-20 left-4 z-50 space-y-2">
+            <!-- Notifications will appear here -->
         </div>
 
-        <!-- Medications Section -->
-        <div class="medications-section">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-                <i class="fas fa-pills text-blue-600 ml-3"></i>
-                الأدوية والعلاجات
-            </h2>
-            
-            <div class="medication-card due">
-                <div class="medication-header">
-                    <div>
-                        <div class="medication-name">ميتفورمين 500mg</div>
-                        <div class="text-sm text-gray-600">لعلاج السكري - مرتين يومياً</div>
+        <!-- Main Content -->
+        <main class="container mx-auto px-4 py-8">
+            <!-- Patient Dashboard -->
+            <div id="patient-dashboard" class="section fade-in">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-4">لوحة التحكم الشخصية</h2>
+                    <p class="text-gray-600">مرحباً بك في منصة الصحة الذكية</p>
+                </div>
+
+                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white rounded-xl shadow-lg p-6 card-hover border-r-4 border-blue-500">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-sm font-semibold text-gray-600">الخطوات اليوم</h3>
+                                <p class="text-2xl font-bold text-blue-600" id="dailySteps">8,547</p>
+                                <p class="text-xs text-green-600">+15% من الأمس</p>
+                            </div>
+                            <div class="text-3xl text-blue-500">
+                                <i class="fas fa-walking"></i>
+                            </div>
+                        </div>
                     </div>
-                    <div class="medication-status status-due">
-                        <i class="fas fa-clock ml-1"></i>
-                        حان الوقت!
+
+                    <div class="bg-white rounded-xl shadow-lg p-6 card-hover border-r-4 border-green-500">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-sm font-semibold text-gray-600">النقاط الصحية</h3>
+                                <p class="text-2xl font-bold text-green-600" id="healthPoints">1,250</p>
+                                <p class="text-xs text-green-600">+25 اليوم</p>
+                            </div>
+                            <div class="text-3xl text-green-500">
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-lg p-6 card-hover border-r-4 border-yellow-500">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-sm font-semibold text-gray-600">الأدوية اليوم</h3>
+                                <p class="text-2xl font-bold text-yellow-600" id="medicationsLeft">2/3</p>
+                                <p class="text-xs text-yellow-600">متبقي دواء واحد</p>
+                            </div>
+                            <div class="text-3xl text-yellow-500">
+                                <i class="fas fa-pills"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-lg p-6 card-hover border-r-4 border-red-500">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="text-sm font-semibold text-gray-600">الموعد القادم</h3>
+                                <p class="text-lg font-bold text-red-600">غداً</p>
+                                <p class="text-xs text-red-600">2:00 مساءً</p>
+                            </div>
+                            <div class="text-3xl text-red-500">
+                                <i class="fas fa-calendar-alt"></i>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="flex justify-between items-center text-sm">
-                    <span>الجرعة التالية: 2:00 م</span>
-                    <button class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors">
-                        <i class="fas fa-check ml-1"></i>
-                        تم أخذ الدواء
+
+                <!-- Emergency Button -->
+                <div class="text-center mb-8">
+                    <button onclick="triggerEmergency()" class="pulse-glow bg-red-600 hover:bg-red-700 text-white px-12 py-6 rounded-full text-xl font-bold shadow-2xl transition-all duration-300">
+                        <i class="fas fa-exclamation-triangle text-2xl ml-3"></i>
+                        طوارئ SOS
+                    </button>
+                    <p class="text-gray-600 mt-3">اضغط في حالة الطوارئ الطبية</p>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="grid lg:grid-cols-2 gap-8 mb-8">
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4">
+                            <i class="fas fa-chart-line text-blue-500 ml-2"></i>
+                            القراءات الحيوية - آخر 7 أيام
+                        </h3>
+                        <canvas id="vitalSignsChart" width="400" height="200"></canvas>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4">
+                            <i class="fas fa-chart-pie text-green-500 ml-2"></i>
+                            توزيع النشاط اليومي
+                        </h3>
+                        <canvas id="activityChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Doctor Dashboard -->
+            <div id="doctor-dashboard" class="section hidden fade-in">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-gray-800 mb-4">لوحة تحكم الطبيب</h2>
+                    <p class="text-gray-600">إدارة المرضى والمتابعة الطبية</p>
+                </div>
+
+                <div class="grid md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                        <div class="text-center">
+                            <div class="text-4xl text-blue-500 mb-3">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-blue-600" id="totalPatients">12</h3>
+                            <p class="text-gray-600">إجمالي المرضى</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                        <div class="text-center">
+                            <div class="text-4xl text-red-500 mb-3">
+                                <i class="fas fa-exclamation-circle"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-red-600" id="criticalPatients">2</h3>
+                            <p class="text-gray-600">حالات حرجة</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                        <div class="text-center">
+                            <div class="text-4xl text-green-500 mb-3">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-green-600" id="todayAppointments">5</h3>
+                            <p class="text-gray-600">مواعيد اليوم</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Patients List -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-6">
+                        <i class="fas fa-list text-blue-500 ml-2"></i>
+                        قائمة المرضى
+                    </h3>
+                    <div id="patientsList" class="space-y-4">
+                        <!-- Patients will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Health File Section -->
+            <div id="health-file" class="section hidden fade-in">
+                <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">
+                    <i class="fas fa-file-medical text-blue-500 ml-3"></i>
+                    ملفي الصحي
+                </h2>
+                
+                <div class="grid lg:grid-cols-2 gap-8">
+                    <!-- Personal Info -->
+                    <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-user text-blue-500 ml-2"></i>
+                            البيانات الشخصية
+                        </h3>
+                        <div id="personalInfo" class="space-y-3">
+                            <!-- Will be populated -->
+                        </div>
+                    </div>
+
+                    <!-- Vital Signs -->
+                    <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-heartbeat text-red-500 ml-2"></i>
+                            القراءات الحيوية الحالية
+                        </h3>
+                        <div id="currentVitals" class="space-y-3">
+                            <!-- Will be populated -->
+                        </div>
+                    </div>
+
+                    <!-- Medications -->
+                    <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-pills text-green-500 ml-2"></i>
+                            الأدوية والتذكيرات
+                        </h3>
+                        <div id="medicationsList" class="space-y-4">
+                            <!-- Will be populated -->
+                        </div>
+                    </div>
+
+                    <!-- Medical History -->
+                    <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-history text-purple-500 ml-2"></i>
+                            سجل الزيارات الطبية
+                        </h3>
+                        <div id="medicalHistory" class="space-y-3">
+                            <!-- Will be populated -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center mt-8">
+                    <button onclick="downloadHealthFile()" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold transition-colors">
+                        <i class="fas fa-download ml-2"></i>
+                        تحميل الملف الصحي (PDF)
                     </button>
                 </div>
             </div>
 
-            <div class="medication-card taken">
-                <div class="medication-header">
-                    <div>
-                        <div class="medication-name">ليسينوبريل 10mg</div>
-                        <div class="text-sm text-gray-600">لضغط الدم - مرة يومياً صباحاً</div>
+            <!-- Hospitals Section -->
+            <div id="hospitals" class="section hidden fade-in">
+                <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">
+                    <i class="fas fa-hospital text-blue-500 ml-3"></i>
+                    المستشفيات والجهات الصحية
+                </h2>
+                
+                <div class="grid lg:grid-cols-2 gap-8">
+                    <!-- Hospitals List -->
+                    <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-hospital-alt text-blue-500 ml-2"></i>
+                            المستشفيات المشاركة
+                        </h3>
+                        <div class="space-y-4">
+                            <div class="p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h4 class="font-semibold">مستشفى الملك فهد الجامعي</h4>
+                                        <p class="text-sm text-gray-600">الخبر - متاح 24/7</p>
+                                        <div class="flex items-center mt-2">
+                                            <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">متاح</span>
+                                            <span class="mr-2 text-sm text-blue-600 cursor-pointer">
+                                                <i class="fas fa-map-marker-alt ml-1"></i>
+                                                عرض على الخريطة
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="text-2xl text-green-500">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h4 class="font-semibold">مستشفى الملك فيصل التخصصي</h4>
+                                        <p class="text-sm text-gray-600">الرياض - تخصصي</p>
+                                        <div class="flex items-center mt-2">
+                                            <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">متاح</span>
+                                            <span class="mr-2 text-sm text-blue-600 cursor-pointer">
+                                                <i class="fas fa-map-marker-alt ml-1"></i>
+                                                عرض على الخريطة
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="text-2xl text-green-500">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h4 class="font-semibold">مجمع الملك عبدالله الطبي</h4>
+                                        <p class="text-sm text-gray-600">جدة - عام وطوارئ</p>
+                                        <div class="flex items-center mt-2">
+                                            <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs">مزدحم</span>
+                                            <span class="mr-2 text-sm text-blue-600 cursor-pointer">
+                                                <i class="fas fa-map-marker-alt ml-1"></i>
+                                                عرض على الخريطة
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="text-2xl text-yellow-500">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="medication-status status-taken">
-                        <i class="fas fa-check ml-1"></i>
-                        مأخوذ
+
+                    <!-- Government Entities -->
+                    <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-university text-purple-500 ml-2"></i>
+                            الجهات الحكومية
+                        </h3>
+                        <div class="space-y-4">
+                            <div class="p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                                <div class="flex items-center">
+                                    <div class="text-2xl text-blue-500 ml-4">
+                                        <i class="fas fa-shield-alt"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold">وزارة الصحة</h4>
+                                        <p class="text-sm text-gray-600">الإشراف العام والسياسات</p>
+                                        <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs mt-1 inline-block">إحصائيات كلية</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                                <div class="flex items-center">
+                                    <div class="text-2xl text-green-500 ml-4">
+                                        <i class="fas fa-umbrella"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold">التأمين الصحي الموحد</h4>
+                                        <p class="text-sm text-gray-600">إدارة التغطية التأمينية</p>
+                                        <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs mt-1 inline-block">تغطية نشطة</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                                <div class="flex items-center">
+                                    <div class="text-2xl text-red-500 ml-4">
+                                        <i class="fas fa-ambulance"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold">الهلال الأحمر السعودي</h4>
+                                        <p class="text-sm text-gray-600">خدمات الطوارئ والإسعاف</p>
+                                        <span class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs mt-1 inline-block">طوارئ 997</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="text-sm text-gray-600">
-                    آخر جرعة: اليوم 8:00 ص
-                </div>
-            </div>
 
-            <div class="medication-card">
-                <div class="medication-header">
-                    <div>
-                        <div class="medication-name">أسبرين 81mg</div>
-                        <div class="text-sm text-gray-600">مسيل للدم - مرة يومياً مساءً</div>
+                <!-- Emergency Alert -->
+                <div id="emergencyAlert" class="hidden mt-8 bg-red-100 border-2 border-red-400 text-red-700 px-6 py-4 rounded-xl shadow-lg">
+                    <div class="flex items-center">
+                        <div class="text-3xl ml-4 animate-pulse">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-lg">🚨 تنبيه طوارئ!</h4>
+                            <p class="font-semibold">تم استلام إشارة طوارئ من المريض <span id="emergencyPatientName"></span></p>
+                            <p class="text-sm">الموقع: الرياض - حي النرجس | الوقت: الآن</p>
+                            <p class="text-sm font-semibold mt-2">تم إشعار أقرب مستشفى والهلال الأحمر</p>
+                        </div>
                     </div>
-                    <div class="medication-status status-upcoming">
-                        <i class="fas fa-clock ml-1"></i>
-                        قادم
+                </div>
+            </div>
+
+            <!-- Community Section -->
+            <div id="community" class="section hidden fade-in">
+                <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">
+                    <i class="fas fa-users text-orange-500 ml-3"></i>
+                    المجتمع الطبي
+                </h2>
+                
+                <div class="grid lg:grid-cols-3 gap-8">
+                    <!-- Forum Posts -->
+                    <div class="lg:col-span-2 bg-white rounded-xl shadow-lg p-6 card-hover">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-xl font-bold text-gray-800 flex items-center">
+                                <i class="fas fa-comments text-blue-500 ml-2"></i>
+                                منتدى المرضى
+                            </h3>
+                            <button onclick="addPost()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition-colors">
+                                <i class="fas fa-plus ml-1"></i>
+                                مشاركة جديدة
+                            </button>
+                        </div>
+                        
+                        <div id="forumPosts" class="space-y-4">
+                            <!-- Posts will be populated -->
+                        </div>
+                    </div>
+
+                    <!-- Sidebar -->
+                    <div class="space-y-6">
+                        <!-- Support Groups -->
+                        <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                                <i class="fas fa-heart text-red-500 ml-2"></i>
+                                مجموعات الدعم
+                            </h3>
+                            <div class="space-y-3">
+                                <div class="p-3 bg-blue-50 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <h4 class="font-semibold">مرضى السكري</h4>
+                                            <p class="text-sm text-gray-600">245 عضو نشط</p>
+                                        </div>
+                                        <i class="fas fa-chevron-left text-blue-500"></i>
+                                    </div>
+                                </div>
+                                <div class="p-3 bg-green-50 rounded-lg cursor-pointer hover:bg-green-100 transition-colors">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <h4 class="font-semibold">مرضى الضغط</h4>
+                                            <p class="text-sm text-gray-600">189 عضو نشط</p>
+                                        </div>
+                                        <i class="fas fa-chevron-left text-green-500"></i>
+                                    </div>
+                                </div>
+                                <div class="p-3 bg-purple-50 rounded-lg cursor-pointer hover:bg-purple-100 transition-colors">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <h4 class="font-semibold">الصحة النفسية</h4>
+                                            <p class="text-sm text-gray-600">156 عضو نشط</p>
+                                        </div>
+                                        <i class="fas fa-chevron-left text-purple-500"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Live Chat -->
+                        <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                                <i class="fas fa-comment-medical text-green-500 ml-2"></i>
+                                استشارة فورية
+                            </h3>
+                            <div class="space-y-3">
+                                <div class="flex items-center p-3 bg-green-50 rounded-lg">
+                                    <div class="w-3 h-3 bg-green-500 rounded-full ml-3 animate-pulse"></div>
+                                    <div class="flex-1">
+                                        <p class="font-semibold">د. فاطمة علي</p>
+                                        <p class="text-sm text-gray-600">أخصائية باطنية - متاحة الآن</p>
+                                    </div>
+                                </div>
+                                <button onclick="startChat()" class="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg font-semibold transition-colors">
+                                    <i class="fas fa-video ml-2"></i>
+                                    بدء استشارة فورية
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Quick Stats -->
+                        <div class="bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl shadow-lg p-6">
+                            <h3 class="text-lg font-bold mb-4">إحصائيات المجتمع</h3>
+                            <div class="space-y-3">
+                                <div class="flex justify-between">
+                                    <span>الأعضاء النشطون:</span>
+                                    <span class="font-bold">1,247</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>المشاركات اليوم:</span>
+                                    <span class="font-bold">89</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>الاستشارات المكتملة:</span>
+                                    <span class="font-bold">156</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="text-sm text-gray-600">
-                    الجرعة التالية: اليوم 8:00 م
+            </div>
+
+            <!-- Store Section -->
+            <div id="store" class="section hidden fade-in">
+                <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">
+                    <i class="fas fa-store text-green-500 ml-3"></i>
+                    المتجر الصحي والنقاط
+                </h2>
+                
+                <div class="grid lg:grid-cols-4 gap-8">
+                    <!-- Points Summary -->
+                    <div class="lg:col-span-1">
+                        <div class="bg-gradient-to-br from-blue-500 to-purple-600 text-white rounded-xl shadow-lg p-6 sticky top-24">
+                            <h3 class="text-xl font-bold mb-4 flex items-center">
+                                <i class="fas fa-star ml-2"></i>
+                                نقاطي الصحية
+                            </h3>
+                            <div class="text-center mb-6">
+                                <div class="text-4xl font-bold" id="storePoints">1,250</div>
+                                <p class="text-blue-100">نقطة متاحة</p>
+                            </div>
+                            <div class="space-y-3 text-sm">
+                                <div class="flex justify-between items-center p-2 bg-white bg-opacity-20 rounded">
+                                    <span>الخطوات اليوم:</span>
+                                    <span class="text-green-300 font-semibold">+85</span>
+                                </div>
+                                <div class="flex justify-between items-center p-2 bg-white bg-opacity-20 rounded">
+                                    <span>الأدوية:</span>
+                                    <span class="text-green-300 font-semibold">+10</span>
+                                </div>
+                                <div class="flex justify-between items-center p-2 bg-white bg-opacity-20 rounded">
+                                    <span>المشاركة:</span>
+                                    <span class="text-green-300 font-semibold">+5</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Store Products -->
+                    <div class="lg:col-span-3">
+                        <div class="bg-white rounded-xl shadow-lg p-6">
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-xl font-bold text-gray-800 flex items-center">
+                                    <i class="fas fa-shopping-cart text-green-500 ml-2"></i>
+                                    المنتجات الصحية
+                                </h3>
+                                <div class="flex items-center space-x-2 space-x-reverse">
+                                    <span class="text-sm text-gray-600">ترتيب حسب:</span>
+                                    <select class="border rounded px-3 py-1 text-sm">
+                                        <option>الأحدث</option>
+                                        <option>السعر</option>
+                                        <option>الشعبية</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6" id="storeProducts">
+                                <!-- Products will be populated -->
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Allergies Section -->
-        <div class="allergies-section">
-            <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center">
-                <i class="fas fa-exclamation-triangle text-red-600 ml-3"></i>
-                الحساسية والتحذيرات
-            </h2>
-            <div class="flex flex-wrap gap-2">
-                <span class="allergy-tag">
-                    <i class="fas fa-ban ml-1"></i>
-                    البنسلين
-                </span>
-                <span class="allergy-tag">
-                    <i class="fas fa-ban ml-1"></i>
-                    المكسرات
-                </span>
-                <span class="allergy-tag">
-                    <i class="fas fa-ban ml-1"></i>
-                    اللاكتوز
-                </span>
-            </div>
-        </div>
+            <!-- Courses Section -->
+            <div id="courses" class="section hidden fade-in">
+                <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">
+                    <i class="fas fa-graduation-cap text-indigo-500 ml-3"></i>
+                    المحاضرات والدورات التدريبية
+                </h2>
+                
+                <div class="grid lg:grid-cols-2 gap-8">
+                    <!-- Video Lectures -->
+                    <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-video text-red-500 ml-2"></i>
+                            مكتبة المحاضرات المرئية
+                        </h3>
+                        <div class="space-y-4" id="videoLectures">
+                            <!-- Videos will be populated -->
+                        </div>
+                    </div>
 
-        <!-- Emergency Information -->
-        <div class="emergency-info">
-            <div class="emergency-icon">
-                <i class="fas fa-ambulance"></i>
-            </div>
-            <h3 class="text-xl font-bold mb-2">معلومات الطوارئ</h3>
-            <div class="grid md:grid-cols-2 gap-4 text-sm">
-                <div>
-                    <strong>جهة الاتصال:</strong> فاطمة العلي (الزوجة)
-                    <br>
-                    <strong>الهاتف:</strong> +966 50 123 4567
+                    <!-- Training Courses -->
+                    <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-certificate text-blue-500 ml-2"></i>
+                            الدورات التدريبية المعتمدة
+                        </h3>
+                        <div class="space-y-4" id="trainingCourses">
+                            <!-- Courses will be populated -->
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <strong>الطبيب المعالج:</strong> د. محمد أحمد
-                    <br>
-                    <strong>المستشفى:</strong> مستشفى الملك فهد
+
+                <!-- Notifications -->
+                <div class="mt-8 bg-gradient-to-r from-yellow-400 to-orange-500 text-white rounded-xl shadow-lg p-6">
+                    <h4 class="font-bold text-lg mb-3 flex items-center">
+                        <i class="fas fa-bell ml-2"></i>
+                        إشعارات التعليم الطبي
+                    </h4>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div class="bg-white bg-opacity-20 rounded-lg p-4">
+                            <p class="font-semibold">محاضرة جديدة متاحة</p>
+                            <p class="text-sm">"الوقاية من أمراض القلب" - د. محمد الأحمد</p>
+                            <p class="text-xs mt-1">غداً الساعة 7:00 مساءً</p>
+                        </div>
+                        <div class="bg-white bg-opacity-20 rounded-lg p-4">
+                            <p class="font-semibold">دورة تدريبية جديدة</p>
+                            <p class="text-sm">"الإسعافات الأولية المتقدمة"</p>
+                            <p class="text-xs mt-1">التسجيل مفتوح حتى نهاية الأسبوع</p>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Action Buttons -->
-        <div class="action-buttons">
-            <button class="action-btn" onclick="shareHealthCard()">
-                <i class="fas fa-share-alt"></i>
-                مشاركة البطاقة
-            </button>
-            
-            <button class="action-btn secondary" onclick="updateVitals()">
-                <i class="fas fa-plus"></i>
-                إضافة قياس جديد
-            </button>
-            
-            <button class="action-btn" onclick="viewHistory()">
-                <i class="fas fa-history"></i>
-                عرض التاريخ الطبي
-            </button>
-            
-            <button class="action-btn danger" onclick="emergencyCall()">
-                <i class="fas fa-phone"></i>
-                اتصال طوارئ
-            </button>
-        </div>
+            <!-- Future Features Section -->
+            <div id="future" class="section hidden fade-in">
+                <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">
+                    <i class="fas fa-rocket text-purple-500 ml-3"></i>
+                    الإضافات والتطوير المستقبلي
+                </h2>
+                
+                <div class="grid lg:grid-cols-2 gap-8">
+                    <!-- Unified Medical Records -->
+                    <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-database text-blue-500 ml-2"></i>
+                            الملفات الطبية الإلكترونية الموحدة
+                        </h3>
+                        <div class="space-y-4">
+                            <div class="p-4 bg-blue-50 rounded-lg border-r-4 border-blue-500">
+                                <h4 class="font-semibold text-blue-800 flex items-center">
+                                    <i class="fas fa-file-medical ml-2"></i>
+                                    ملف واحد لكل مريض
+                                </h4>
+                                <p class="text-sm text-blue-700 mt-2">ملف طبي موحد يمكن الوصول إليه من جميع المستشفيات والعيادات في المملكة</p>
+                            </div>
+                            <div class="p-4 bg-green-50 rounded-lg border-r-4 border-green-500">
+                                <h4 class="font-semibold text-green-800 flex items-center">
+                                    <i class="fas fa-shield-alt ml-2"></i>
+                                    مشاركة آمنة للبيانات
+                                </h4>
+                                <p class="text-sm text-green-700 mt-2">نظام آمن ومشفر لمشاركة البيانات الطبية بين مقدمي الرعاية الصحية</p>
+                            </div>
+                            <div class="p-4 bg-purple-50 rounded-lg border-r-4 border-purple-500">
+                                <h4 class="font-semibold text-purple-800 flex items-center">
+                                    <i class="fas fa-history ml-2"></i>
+                                    تاريخ طبي شامل
+                                </h4>
+                                <p class="text-sm text-purple-700 mt-2">سجل كامل ومفصل لجميع الزيارات والفحوصات والعلاجات والتشخيصات</p>
+                            </div>
+                        </div>
+                    </div>
 
-        <!-- Last Updated -->
-        <div class="last-updated">
-            آخر تحديث: اليوم 1:30 م | 
-            <a href="https://qrco.de/bgEIlF" target="_blank" class="text-blue-600 hover:text-blue-800 transition-colors">
-                <i class="fas fa-qrcode ml-1"></i>
-                الرابط المباشر: https://qrco.de/bgEIlF
-            </a>
-        </div>
+                    <!-- Insurance Integration -->
+                    <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-umbrella ml-2 text-green-500"></i>
+                            التكامل مع شركات التأمين
+                        </h3>
+                        <div class="space-y-4">
+                            <div class="p-4 bg-indigo-50 rounded-lg border-r-4 border-indigo-500">
+                                <h4 class="font-semibold text-indigo-800 flex items-center">
+                                    <i class="fas fa-check-circle ml-2"></i>
+                                    التحقق التلقائي من التغطية
+                                </h4>
+                                <p class="text-sm text-indigo-700 mt-2">فحص فوري وتلقائي لتغطية التأمين قبل تلقي أي خدمة طبية</p>
+                            </div>
+                            <div class="p-4 bg-teal-50 rounded-lg border-r-4 border-teal-500">
+                                <h4 class="font-semibold text-teal-800 flex items-center">
+                                    <i class="fas fa-file-invoice ml-2"></i>
+                                    معالجة المطالبات الرقمية
+                                </h4>
+                                <p class="text-sm text-teal-700 mt-2">تقديم ومعالجة مطالبات التأمين إلكترونياً بشكل سريع وآمن</p>
+                            </div>
+                            <div class="p-4 bg-orange-50 rounded-lg border-r-4 border-orange-500">
+                                <h4 class="font-semibold text-orange-800 flex items-center">
+                                    <i class="fas fa-network-wired ml-2"></i>
+                                    شبكة موحدة للمقدمين
+                                </h4>
+                                <p class="text-sm text-orange-700 mt-2">دليل شامل ومحدث لجميع مقدمي الخدمات المشمولين بالتأمين</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI and Big Data -->
+                    <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-brain ml-2 text-purple-500"></i>
+                            الذكاء الاصطناعي والبيانات الضخمة
+                        </h3>
+                        <div class="space-y-4">
+                            <div class="p-4 bg-red-50 rounded-lg border-r-4 border-red-500">
+                                <h4 class="font-semibold text-red-800 flex items-center">
+                                    <i class="fas fa-search ml-2"></i>
+                                    التنبؤ المبكر بالأمراض
+                                </h4>
+                                <p class="text-sm text-red-700 mt-2">استخدام خوارزميات الذكاء الاصطناعي للتنبؤ بالأمراض المزمنة قبل ظهور الأعراض</p>
+                            </div>
+                            <div class="p-4 bg-yellow-50 rounded-lg border-r-4 border-yellow-500">
+                                <h4 class="font-semibold text-yellow-800 flex items-center">
+                                    <i class="fas fa-chart-line ml-2"></i>
+                                    تحليل الأنماط الصحية
+                                </h4>
+                                <p class="text-sm text-yellow-700 mt-2">تحليل البيانات الضخمة لاكتشاف الأنماط والاتجاهات الصحية على مستوى المجتمع</p>
+                            </div>
+                            <div class="p-4 bg-pink-50 rounded-lg border-r-4 border-pink-500">
+                                <h4 class="font-semibold text-pink-800 flex items-center">
+                                    <i class="fas fa-user-md ml-2"></i>
+                                    التوصيات الطبية الذكية
+                                </h4>
+                                <p class="text-sm text-pink-700 mt-2">توصيات مخصصة للعلاج والوقاية بناءً على التحليل الذكي للبيانات الشخصية</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Vision 2030 Integration -->
+                    <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                            <i class="fas fa-flag ml-2 text-green-500"></i>
+                            التكامل مع رؤية المملكة 2030
+                        </h3>
+                        <div class="space-y-4">
+                            <div class="p-4 bg-green-50 rounded-lg border-r-4 border-green-500">
+                                <h4 class="font-semibold text-green-800 flex items-center">
+                                    <i class="fas fa-heart ml-2"></i>
+                                    تحسين جودة الحياة
+                                </h4>
+                                <p class="text-sm text-green-700 mt-2">المساهمة الفعالة في تحقيق هدف تحسين جودة الحياة للمواطنين والمقيمين</p>
+                            </div>
+                            <div class="p-4 bg-blue-50 rounded-lg border-r-4 border-blue-500">
+                                <h4 class="font-semibold text-blue-800 flex items-center">
+                                    <i class="fas fa-digital-tachograph ml-2"></i>
+                                    التحول الرقمي الصحي
+                                </h4>
+                                <p class="text-sm text-blue-700 mt-2">قيادة التحول الرقمي في القطاع الصحي وفقاً لاستراتيجية المملكة الرقمية</p>
+                            </div>
+                            <div class="p-4 bg-purple-50 rounded-lg border-r-4 border-purple-500">
+                                <h4 class="font-semibold text-purple-800 flex items-center">
+                                    <i class="fas fa-leaf ml-2"></i>
+                                    الاستدامة والكفاءة
+                                </h4>
+                                <p class="text-sm text-purple-700 mt-2">تحقيق الاستدامة المالية وزيادة كفاءة الخدمات الصحية مع خفض التكاليف</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Development Timeline -->
+                <div class="mt-12 bg-white rounded-xl shadow-lg p-8">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-8 text-center flex items-center justify-center">
+                        <i class="fas fa-timeline ml-3 text-blue-500"></i>
+                        الجدول الزمني للتطوير والتنفيذ
+                    </h3>
+                    <div class="relative">
+                        <div class="absolute right-8 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-500 to-purple-500 rounded"></div>
+                        <div class="space-y-12">
+                            <div class="relative flex items-center">
+                                <div class="absolute right-6 w-6 h-6 bg-green-500 rounded-full border-4 border-white shadow-lg z-10"></div>
+                                <div class="mr-20 bg-green-50 rounded-xl p-6 border-r-4 border-green-500 flex-1">
+                                    <h4 class="font-bold text-lg text-green-800">المرحلة الأولى - 2025</h4>
+                                    <p class="text-green-700 mt-2">إطلاق النموذج الأولي، الملفات الطبية الأساسية، وتسجيل المستشفيات الرئيسية</p>
+                                    <div class="mt-3 flex items-center text-sm text-green-600">
+                                        <i class="fas fa-check-circle ml-2"></i>
+                                        <span>مكتمل 85%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="relative flex items-center">
+                                <div class="absolute right-6 w-6 h-6 bg-blue-500 rounded-full border-4 border-white shadow-lg z-10"></div>
+                                <div class="mr-20 bg-blue-50 rounded-xl p-6 border-r-4 border-blue-500 flex-1">
+                                    <h4 class="font-bold text-lg text-blue-800">المرحلة الثانية - 2026</h4>
+                                    <p class="text-blue-700 mt-2">ربط شركات التأمين، الملفات الطبية الموحدة، وتوسيع الشبكة لتشمل العيادات الخاصة</p>
+                                    <div class="mt-3 flex items-center text-sm text-blue-600">
+                                        <i class="fas fa-clock ml-2"></i>
+                                        <span>في التخطيط</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="relative flex items-center">
+                                <div class="absolute right-6 w-6 h-6 bg-yellow-500 rounded-full border-4 border-white shadow-lg z-10"></div>
+                                <div class="mr-20 bg-yellow-50 rounded-xl p-6 border-r-4 border-yellow-500 flex-1">
+                                    <h4 class="font-bold text-lg text-yellow-800">المرحلة الثالثة - 2027</h4>
+                                    <p class="text-yellow-700 mt-2">تطبيق الذكاء الاصطناعي، التحليلات المتقدمة، والتنبؤ بالأمراض</p>
+                                    <div class="mt-3 flex items-center text-sm text-yellow-600">
+                                        <i class="fas fa-cog ml-2"></i>
+                                        <span>قيد التطوير</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="relative flex items-center">
+                                <div class="absolute right-6 w-6 h-6 bg-purple-500 rounded-full border-4 border-white shadow-lg z-10"></div>
+                                <div class="mr-20 bg-purple-50 rounded-xl p-6 border-r-4 border-purple-500 flex-1">
+                                    <h4 class="font-bold text-lg text-purple-800">المرحلة الرابعة - 2028-2030</h4>
+                                    <p class="text-purple-700 mt-2">التكامل الكامل مع رؤية 2030، التوسع الإقليمي، والريادة العالمية في الصحة الرقمية</p>
+                                    <div class="mt-3 flex items-center text-sm text-purple-600">
+                                        <i class="fas fa-rocket ml-2"></i>
+                                        <span>الهدف المستقبلي</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
     </div>
 
+    <!-- Footer -->
+    <footer class="bg-gradient-to-r from-gray-800 to-gray-900 text-white py-12 mt-16">
+        <div class="container mx-auto px-4">
+            <div class="grid md:grid-cols-3 gap-8 mb-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4 flex items-center">
+                        <i class="fas fa-heartbeat text-red-500 ml-2"></i>
+                        المنصة الوطنية للصحة الذكية
+                    </h3>
+                    <p class="text-gray-300 leading-relaxed">
+                        منصة متكاملة تهدف إلى تحسين جودة الرعاية الصحية في المملكة العربية السعودية من خلال التقنيات الحديثة والذكاء الاصطناعي.
+                    </p>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">روابط سريعة</h4>
+                    <ul class="space-y-2 text-gray-300">
+                        <li><a href="#" class="hover:text-white transition-colors">عن المنصة</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">الخصوصية والأمان</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">الدعم الفني</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">اتصل بنا</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">رؤية 2030</h4>
+                    <p class="text-gray-300 text-sm leading-relaxed">
+                        تماشياً مع رؤية المملكة 2030، نسعى لتحقيق التحول الرقمي في القطاع الصحي وتحسين جودة الحياة للجميع.
+                    </p>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 pt-6 text-center">
+                <p class="text-gray-400">
+                    جميع الحقوق محفوظة © <span class="font-semibold text-white">مشاري أبو زيدة</span> – 2025
+                </p>
+                <p class="text-gray-500 text-sm mt-2">
+                    تم التطوير بما يتماشى مع معايير الأمان والخصوصية العالمية
+                </p>
+            </div>
+        </div>
+    </footer>
+
     <script>
-        // Medication reminder functionality
-        function markMedicationTaken(medicationName) {
-            alert(`تم تسجيل أخذ دواء: ${medicationName}`);
-            // Here you would typically update the database
-        }
+        // Database (Mock Data)
+        const database = {
+            patients: [
+                {
+                    id: 1,
+                    name: "علي محمد السعيد",
+                    age: 45,
+                    gender: "ذكر",
+                    bloodType: "O+",
+                    conditions: ["السكري النوع الثاني", "ارتفاع ضغط الدم"],
+                    vitals: { bp: "140/90", pulse: 78, oxygen: 97, temp: 36.8 },
+                    medications: [
+                        { name: "ميتفورمين", dose: "500 مجم", frequency: "مرتين يومياً", taken: false },
+                        { name: "أملوديبين", dose: "5 مجم", frequency: "مرة يومياً", taken: true }
+                    ],
+                    points: 1250,
+                    status: "مستقر"
+                },
+                {
+                    id: 2,
+                    name: "محمد أحمد الأحمد",
+                    age: 35,
+                    gender: "ذكر",
+                    bloodType: "A+",
+                    conditions: ["الربو"],
+                    vitals: { bp: "120/80", pulse: 72, oxygen: 98, temp: 36.5 },
+                    medications: [
+                        { name: "سالبوتامول", dose: "100 مكجم", frequency: "عند الحاجة", taken: false }
+                    ],
+                    points: 890,
+                    status: "مستقر"
+                },
+                {
+                    id: 3,
+                    name: "يوسف علي القحطاني",
+                    age: 52,
+                    gender: "ذكر",
+                    bloodType: "B+",
+                    conditions: ["أمراض القلب", "السكري"],
+                    vitals: { bp: "160/95", pulse: 85, oxygen: 95, temp: 37.1 },
+                    medications: [
+                        { name: "أتورفاستاتين", dose: "20 مجم", frequency: "مرة يومياً", taken: false },
+                        { name: "إنالابريل", dose: "10 مجم", frequency: "مرتين يومياً", taken: false }
+                    ],
+                    points: 650,
+                    status: "عالي الخطورة"
+                },
+                {
+                    id: 4,
+                    name: "إبراهيم محمد الشمري",
+                    age: 28,
+                    gender: "ذكر",
+                    bloodType: "AB+",
+                    conditions: [],
+                    vitals: { bp: "115/75", pulse: 68, oxygen: 99, temp: 36.3 },
+                    medications: [],
+                    points: 1450,
+                    status: "ممتاز"
+                }
+            ],
+            doctors: [
+                {
+                    id: 1,
+                    name: "مشاري ناجي",
+                    specialty: "طب باطني",
+                    patients: [1, 2, 3, 4]
+                }
+            ],
+            forumPosts: [
+                {
+                    id: 1,
+                    author: "سارة محمد",
+                    content: "كيف يمكنني التحكم في مستوى السكر بشكل أفضل؟",
+                    time: "منذ ساعتين",
+                    likes: 5,
+                    replies: 3,
+                    type: "patient"
+                },
+                {
+                    id: 2,
+                    author: "د. أحمد الطبيب",
+                    content: "أنصح بممارسة الرياضة المنتظمة واتباع نظام غذائي متوازن. يمكنني مساعدتك في وضع خطة مناسبة.",
+                    time: "منذ ساعة",
+                    likes: 12,
+                    replies: 0,
+                    type: "doctor"
+                },
+                {
+                    id: 3,
+                    author: "علي أحمد",
+                    content: "شاركت تجربتي مع تطبيق المنصة وكيف ساعدني في تنظيم أدويتي",
+                    time: "منذ 3 ساعات",
+                    likes: 8,
+                    replies: 5,
+                    type: "patient"
+                }
+            ],
+            products: [
+                {
+                    id: 1,
+                    name: "جهاز المشي الذكي",
+                    price: 2500,
+                    discount: 250,
+                    icon: "🏃‍♂️",
+                    description: "جهاز مشي متطور مع تتبع ذكي للأنشطة"
+                },
+                {
+                    id: 2,
+                    name: "فيتامينات متعددة",
+                    price: 150,
+                    discount: 50,
+                    icon: "💊",
+                    description: "مكمل غذائي شامل لصحة أفضل"
+                },
+                {
+                    id: 3,
+                    name: "جهاز قياس الضغط",
+                    price: 300,
+                    discount: 100,
+                    icon: "🩺",
+                    description: "جهاز رقمي دقيق لقياس ضغط الدم"
+                },
+                {
+                    id: 4,
+                    name: "حصيرة يوجا طبية",
+                    price: 120,
+                    discount: 30,
+                    icon: "🧘‍♀️",
+                    description: "حصيرة عالية الجودة للتمارين العلاجية"
+                },
+                {
+                    id: 5,
+                    name: "زجاجة ماء ذكية",
+                    price: 80,
+                    discount: 20,
+                    icon: "💧",
+                    description: "تذكرك بشرب الماء بانتظام"
+                },
+                {
+                    id: 6,
+                    name: "ساعة ذكية صحية",
+                    price: 800,
+                    discount: 200,
+                    icon: "⌚",
+                    description: "تتبع شامل للصحة واللياقة البدنية"
+                }
+            ],
+            lectures: [
+                {
+                    id: 1,
+                    title: "إدارة مرض السكري",
+                    instructor: "د. أحمد محمود - طب باطني",
+                    duration: "15:30",
+                    views: 1245,
+                    type: "video"
+                },
+                {
+                    id: 2,
+                    title: "التغذية الصحية المتوازنة",
+                    instructor: "د. سارة أحمد - تغذية علاجية",
+                    duration: "22:15",
+                    views: 2156,
+                    type: "video"
+                },
+                {
+                    id: 3,
+                    title: "الرياضة والصحة العامة",
+                    instructor: "د. محمد علي - طب رياضي",
+                    duration: "18:45",
+                    views: 987,
+                    type: "video"
+                },
+                {
+                    id: 4,
+                    title: "دليل الإسعافات الأولية",
+                    instructor: "الهلال الأحمر السعودي",
+                    downloads: 3421,
+                    type: "pdf"
+                }
+            ],
+            courses: [
+                {
+                    id: 1,
+                    title: "كيفية التعامل مع مرض السكري",
+                    description: "دورة شاملة لتعلم إدارة مرض السكري بفعالية",
+                    duration: "4 ساعات",
+                    students: 156,
+                    price: 0,
+                    points: 0
+                },
+                {
+                    id: 2,
+                    title: "الصحة النفسية والعافية",
+                    description: "تعلم تقنيات إدارة التوتر والحفاظ على الصحة النفسية",
+                    duration: "3 ساعات",
+                    students: 89,
+                    price: 0,
+                    points: 50
+                },
+                {
+                    id: 3,
+                    title: "التمارين المنزلية للمبتدئين",
+                    description: "برنامج تمارين بسيط يمكن ممارسته في المنزل",
+                    duration: "2 ساعة",
+                    students: 234,
+                    price: 0,
+                    points: 0
+                }
+            ]
+        };
 
-        // Share health card
-        function shareHealthCard() {
-            if (navigator.share) {
-                navigator.share({
-                    title: 'البطاقة الصحية الرقمية',
-                    text: 'البطاقة الصحية لأحمد محمد العلي',
-                    url: 'https://qrco.de/bgEIlF'
-                });
-            } else {
-                // Fallback for browsers that don't support Web Share API
-                navigator.clipboard.writeText('https://qrco.de/bgEIlF').then(() => {
-                    alert('تم نسخ رابط البطاقة الصحية!');
-                });
-            }
-        }
+        // Global variables
+        let currentUser = null;
+        let currentUserType = null;
+        let currentSection = 'dashboard';
 
-        // Update vitals
-        function updateVitals() {
-            alert('سيتم فتح نموذج إضافة قياسات جديدة');
-            // Here you would open a form to add new vital signs
-        }
+        // Initialize application
+        document.addEventListener('DOMContentLoaded', function() {
+            populateUserOptions();
+            initializeCharts();
+        });
 
-        // View medical history
-        function viewHistory() {
-            alert('سيتم عرض التاريخ الطبي الكامل');
-            // Here you would navigate to medical history page
-        }
-
-        // Emergency call
-        function emergencyCall() {
-            if (confirm('هل تريد الاتصال بالطوارئ؟')) {
-                window.location.href = 'tel:997'; // Saudi emergency number
-            }
-        }
-
-        // Auto-refresh vitals every 5 minutes
-        setInterval(() => {
-            console.log('تحديث القياسات الحيوية...');
-            // Here you would fetch updated vital signs from the server
-        }, 300000);
-
-        // Medication reminders
-        function checkMedicationReminders() {
-            const now = new Date();
-            const currentTime = now.getHours() + ':' + String(now.getMinutes()).padStart(2, '0');
+        // Populate user options based on type
+        function populateUserOptions() {
+            const userTypeSelect = document.getElementById('userType');
+            const userNameSelect = document.getElementById('userName');
             
-            // Example: Check if it's time for medication
-            if (currentTime === '14:00') {
-                if (Notification.permission === 'granted') {
-                    new Notification('تذكير دواء', {
-                        body: 'حان وقت أخذ دواء الميتفورمين',
-                        icon: '/favicon.ico'
+            userTypeSelect.addEventListener('change', function() {
+                const type = this.value;
+                userNameSelect.innerHTML = '';
+                
+                if (type === 'patient') {
+                    database.patients.forEach(patient => {
+                        const option = document.createElement('option');
+                        option.value = patient.id;
+                        option.textContent = patient.name;
+                        userNameSelect.appendChild(option);
                     });
+                } else if (type === 'doctor') {
+                    database.doctors.forEach(doctor => {
+                        const option = document.createElement('option');
+                        option.value = doctor.id;
+                        option.textContent = doctor.name;
+                        userNameSelect.appendChild(option);
+                    });
+                }
+            });
+            
+            // Trigger initial population
+            userTypeSelect.dispatchEvent(new Event('change'));
+        }
+
+        // Login function
+        function login() {
+            const userType = document.getElementById('userType').value;
+            const userId = parseInt(document.getElementById('userName').value);
+            
+            currentUserType = userType;
+            
+            if (userType === 'patient') {
+                currentUser = database.patients.find(p => p.id === userId);
+            } else {
+                currentUser = database.doctors.find(d => d.id === userId);
+            }
+            
+            if (currentUser) {
+                document.getElementById('loginScreen').classList.add('hidden');
+                document.getElementById('mainApp').classList.remove('hidden');
+                
+                setupUserInterface();
+                showSection(userType === 'patient' ? 'patient-dashboard' : 'doctor-dashboard');
+                
+                // Start medication reminders for patients
+                if (userType === 'patient') {
+                    startMedicationReminders();
                 }
             }
         }
 
-        // Request notification permission
-        if ('Notification' in window && Notification.permission === 'default') {
-            Notification.requestPermission();
+        // Logout function
+        function logout() {
+            currentUser = null;
+            currentUserType = null;
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('mainApp').classList.add('hidden');
         }
 
-        // Check for medication reminders every minute
-        setInterval(checkMedicationReminders, 60000);
+        // Setup user interface based on user type
+        function setupUserInterface() {
+            const userInfo = document.getElementById('userInfo');
+            const navigation = document.getElementById('navigation');
+            
+            // Setup user info
+            if (currentUserType === 'patient') {
+                userInfo.innerHTML = `
+                    <div class="text-left">
+                        <p class="font-semibold">${currentUser.name}</p>
+                        <p class="text-sm text-blue-200">مريض</p>
+                    </div>
+                    <div class="bg-blue-500 px-3 py-1 rounded-lg mr-3">
+                        <span class="text-sm">النقاط: </span>
+                        <span class="font-bold" id="headerPoints">${currentUser.points}</span>
+                    </div>
+                `;
+                
+                // Setup patient navigation
+                navigation.innerHTML = `
+                    <button onclick="showSection('patient-dashboard')" class="nav-btn bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-all duration-300 flex items-center space-x-2 space-x-reverse">
+                        <i class="fas fa-tachometer-alt"></i><span>الرئيسية</span>
+                    </button>
+                    <button onclick="showSection('health-file')" class="nav-btn bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-all duration-300 flex items-center space-x-2 space-x-reverse">
+                        <i class="fas fa-file-medical"></i><span>ملفي الصحي</span>
+                    </button>
+                    <button onclick="showSection('hospitals')" class="nav-btn bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-all duration-300 flex items-center space-x-2 space-x-reverse">
+                        <i class="fas fa-hospital"></i><span>المستشفيات</span>
+                    </button>
+                    <button onclick="showSection('community')" class="nav-btn bg-orange-600 text-white px-6 py-3 rounded-lg hover:bg-orange-700 transition-all duration-300 flex items-center space-x-2 space-x-reverse">
+                        <i class="fas fa-users"></i><span>المجتمع الطبي</span>
+                    </button>
+                    <button onclick="showSection('store')" class="nav-btn bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition-all duration-300 flex items-center space-x-2 space-x-reverse">
+                        <i class="fas fa-store"></i><span>المتجر والنقاط</span>
+                    </button>
+                    <button onclick="showSection('courses')" class="nav-btn bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-all duration-300 flex items-center space-x-2 space-x-reverse">
+                        <i class="fas fa-graduation-cap"></i><span>المحاضرات</span>
+                    </button>
+                    <button onclick="showSection('future')" class="nav-btn bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 transition-all duration-300 flex items-center space-x-2 space-x-reverse">
+                        <i class="fas fa-rocket"></i><span>المستقبل</span>
+                    </button>
+                `;
+                
+                populatePatientData();
+            } else {
+                userInfo.innerHTML = `
+                    <div class="text-left">
+                        <p class="font-semibold">د. ${currentUser.name}</p>
+                        <p class="text-sm text-blue-200">${currentUser.specialty}</p>
+                    </div>
+                `;
+                
+                // Setup doctor navigation
+                navigation.innerHTML = `
+                    <button onclick="showSection('doctor-dashboard')" class="nav-btn bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-all duration-300 flex items-center space-x-2 space-x-reverse">
+                        <i class="fas fa-user-md"></i><span>لوحة التحكم</span>
+                    </button>
+                    <button onclick="showSection('hospitals')" class="nav-btn bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-all duration-300 flex items-center space-x-2 space-x-reverse">
+                        <i class="fas fa-hospital"></i><span>المستشفيات</span>
+                    </button>
+                    <button onclick="showSection('community')" class="nav-btn bg-orange-600 text-white px-6 py-3 rounded-lg hover:bg-orange-700 transition-all duration-300 flex items-center space-x-2 space-x-reverse">
+                        <i class="fas fa-users"></i><span>المجتمع الطبي</span>
+                    </button>
+                    <button onclick="showSection('courses')" class="nav-btn bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-all duration-300 flex items-center space-x-2 space-x-reverse">
+                        <i class="fas fa-graduation-cap"></i><span>المحاضرات</span>
+                    </button>
+                    <button onclick="showSection('future')" class="nav-btn bg-teal-600 text-white px-6 py-3 rounded-lg hover:bg-teal-700 transition-all duration-300 flex items-center space-x-2 space-x-reverse">
+                        <i class="fas fa-rocket"></i><span>المستقبل</span>
+                    </button>
+                `;
+                
+                populateDoctorData();
+            }
+            
+            // Populate common sections
+            populateForumPosts();
+            populateStoreProducts();
+            populateLectures();
+            populateCourses();
+        }
 
-        // Add click handlers for medication cards
-        document.addEventListener('DOMContentLoaded', function() {
-            const medicationCards = document.querySelectorAll('.medication-card');
-            medicationCards.forEach(card => {
-                card.addEventListener('click', function() {
-                    const medicationName = this.querySelector('.medication-name').textContent;
-                    console.log(`تم النقر على دواء: ${medicationName}`);
+        // Show section function
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.add('hidden');
+            });
+            
+            // Show selected section
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) {
+                targetSection.classList.remove('hidden');
+                currentSection = sectionId;
+                
+                // Update navigation buttons
+                document.querySelectorAll('.nav-btn').forEach(btn => {
+                    btn.classList.remove('ring-2', 'ring-white');
                 });
+                
+                // Find and highlight active button
+                const activeBtn = Array.from(document.querySelectorAll('.nav-btn')).find(btn => 
+                    btn.getAttribute('onclick')?.includes(sectionId)
+                );
+                if (activeBtn) {
+                    activeBtn.classList.add('ring-2', 'ring-white');
+                }
+            }
+        }
+
+        // Populate patient data
+        function populatePatientData() {
+            // Personal info
+            const personalInfo = document.getElementById('personalInfo');
+            if (personalInfo) {
+                personalInfo.innerHTML = `
+                    <div class="flex justify-between border-b pb-2"><span class="font-semibold">الاسم:</span><span>${currentUser.name}</span></div>
+                    <div class="flex justify-between border-b pb-2"><span class="font-semibold">العمر:</span><span>${currentUser.age} سنة</span></div>
+                    <div class="flex justify-between border-b pb-2"><span class="font-semibold">الجنس:</span><span>${currentUser.gender}</span></div>
+                    <div class="flex justify-between border-b pb-2"><span class="font-semibold">فصيلة الدم:</span><span>${currentUser.bloodType}</span></div>
+                    <div class="flex justify-between"><span class="font-semibold">الأمراض المزمنة:</span><span>${currentUser.conditions.join(', ') || 'لا يوجد'}</span></div>
+                `;
+            }
+
+            // Current vitals
+            const currentVitals = document.getElementById('currentVitals');
+            if (currentVitals) {
+                currentVitals.innerHTML = `
+                    <div class="flex justify-between items-center border-b pb-2">
+                        <span>ضغط الدم:</span>
+                        <span class="bg-${getVitalColor(currentUser.vitals.bp, 'bp')}-100 text-${getVitalColor(currentUser.vitals.bp, 'bp')}-800 px-3 py-1 rounded-full">${currentUser.vitals.bp}</span>
+                    </div>
+                    <div class="flex justify-between items-center border-b pb-2">
+                        <span>النبض:</span>
+                        <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full">${currentUser.vitals.pulse} نبضة/دقيقة</span>
+                    </div>
+                    <div class="flex justify-between items-center border-b pb-2">
+                        <span>الأكسجين:</span>
+                        <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full">${currentUser.vitals.oxygen}%</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span>الحرارة:</span>
+                        <span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full">${currentUser.vitals.temp}°م</span>
+                    </div>
+                `;
+            }
+
+            // Medications
+            const medicationsList = document.getElementById('medicationsList');
+            if (medicationsList) {
+                medicationsList.innerHTML = currentUser.medications.map(med => `
+                    <div class="flex items-center justify-between p-4 bg-${med.taken ? 'gray' : 'blue'}-50 rounded-lg border">
+                        <div class="flex-1">
+                            <p class="font-semibold">${med.name}</p>
+                            <p class="text-sm text-gray-600">${med.dose} - ${med.frequency}</p>
+                        </div>
+                        <button onclick="takeMedicine('${med.name}')" 
+                                class="px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${med.taken ? 'bg-gray-400 text-gray-600 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600 text-white'}" 
+                                ${med.taken ? 'disabled' : ''}>
+                            ${med.taken ? '✅ تم التناول' : 'تناول الدواء'}
+                        </button>
+                    </div>
+                `).join('');
+            }
+
+            // Medical history
+            const medicalHistory = document.getElementById('medicalHistory');
+            if (medicalHistory) {
+                medicalHistory.innerHTML = `
+                    <div class="border-r-4 border-blue-500 pr-4 mb-3">
+                        <p class="font-semibold">د. أحمد محمود - طب باطني</p>
+                        <p class="text-sm text-gray-600">15 يناير 2025</p>
+                        <p class="text-sm">التوصية: الاستمرار على العلاج الحالي مع المتابعة الدورية</p>
+                    </div>
+                    <div class="border-r-4 border-green-500 pr-4">
+                        <p class="font-semibold">د. فاطمة علي - غدد صماء</p>
+                        <p class="text-sm text-gray-600">28 ديسمبر 2024</p>
+                        <p class="text-sm">التوصية: تحسن ملحوظ في مستوى السكر، الاستمرار على النظام الغذائي</p>
+                    </div>
+                `;
+            }
+
+            // Update points displays
+            updatePointsDisplay();
+        }
+
+        // Populate doctor data
+        function populateDoctorData() {
+            const patientsList = document.getElementById('patientsList');
+            if (patientsList) {
+                const doctorPatients = database.patients.filter(p => currentUser.patients.includes(p.id));
+                
+                patientsList.innerHTML = doctorPatients.map(patient => `
+                    <div class="bg-gray-50 rounded-lg p-4 border-r-4 border-${getStatusColor(patient.status)}-500">
+                        <div class="flex items-center justify-between">
+                            <div class="flex-1">
+                                <div class="flex items-center mb-2">
+                                    <h4 class="font-semibold text-lg">${patient.name}</h4>
+                                    <span class="mr-3 bg-${getStatusColor(patient.status)}-100 text-${getStatusColor(patient.status)}-800 px-2 py-1 rounded text-xs">
+                                        ${patient.status}
+                                    </span>
+                                </div>
+                                <div class="grid md:grid-cols-2 gap-4 text-sm">
+                                    <div>
+                                        <p><span class="font-semibold">العمر:</span> ${patient.age} سنة</p>
+                                        <p><span class="font-semibold">فصيلة الدم:</span> ${patient.bloodType}</p>
+                                    </div>
+                                    <div>
+                                        <p><span class="font-semibold">ضغط الدم:</span> ${patient.vitals.bp}</p>
+                                        <p><span class="font-semibold">النبض:</span> ${patient.vitals.pulse}</p>
+                                    </div>
+                                </div>
+                                <div class="mt-2">
+                                    <p class="text-sm"><span class="font-semibold">الحالات:</span> ${patient.conditions.join(', ') || 'لا يوجد'}</p>
+                                </div>
+                            </div>
+                            <div class="flex flex-col space-y-2">
+                                <button onclick="viewPatientDetails(${patient.id})" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded text-sm">
+                                    <i class="fas fa-eye ml-1"></i>
+                                    عرض التفاصيل
+                                </button>
+                                <button onclick="editMedications(${patient.id})" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded text-sm">
+                                    <i class="fas fa-pills ml-1"></i>
+                                    تعديل الأدوية
+                                </button>
+                                <button onclick="updateStatus(${patient.id})" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded text-sm">
+                                    <i class="fas fa-edit ml-1"></i>
+                                    تحديث الحالة
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // Populate forum posts
+        function populateForumPosts() {
+            const forumPosts = document.getElementById('forumPosts');
+            if (forumPosts) {
+                forumPosts.innerHTML = database.forumPosts.map(post => `
+                    <div class="p-4 border rounded-lg ${post.type === 'doctor' ? 'bg-green-50 border-green-200' : 'bg-white'}">
+                        <div class="flex items-center mb-3">
+                            <div class="w-10 h-10 bg-${post.type === 'doctor' ? 'green' : 'blue'}-500 rounded-full flex items-center justify-center text-white font-semibold">
+                                ${post.type === 'doctor' ? 'د' : post.author.charAt(0)}
+                            </div>
+                            <div class="mr-3 flex-1">
+                                <p class="font-semibold">${post.author}</p>
+                                <p class="text-xs text-gray-500">${post.time}</p>
+                            </div>
+                            ${post.type === 'doctor' ? '<span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">طبيب معتمد</span>' : ''}
+                        </div>
+                        <p class="text-gray-700 mb-3">${post.content}</p>
+                        <div class="flex items-center space-x-4 space-x-reverse text-sm text-gray-500">
+                            <button class="hover:text-blue-600 transition-colors">
+                                <i class="fas fa-thumbs-up ml-1"></i>
+                                ${post.likes}
+                            </button>
+                            <button class="hover:text-blue-600 transition-colors">
+                                <i class="fas fa-comment ml-1"></i>
+                                ${post.replies} ردود
+                            </button>
+                            <button class="hover:text-blue-600 transition-colors">
+                                <i class="fas fa-share ml-1"></i>
+                                مشاركة
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // Populate store products
+        function populateStoreProducts() {
+            const storeProducts = document.getElementById('storeProducts');
+            if (storeProducts) {
+                storeProducts.innerHTML = database.products.map(product => `
+                    <div class="border rounded-lg p-4 hover:shadow-lg transition-all duration-300 card-hover">
+                        <div class="text-center">
+                            <div class="text-5xl mb-3">${product.icon}</div>
+                            <h4 class="font-semibold mb-2">${product.name}</h4>
+                            <p class="text-sm text-gray-600 mb-4">${product.description}</p>
+                            <div class="mb-4">
+                                <p class="text-lg font-bold text-blue-600 mb-1">${product.price} ريال</p>
+                                <p class="text-sm text-green-600 mb-2">خصم ${product.discount} نقطة = ${product.discount} ريال</p>
+                                <p class="text-sm font-semibold text-purple-600">السعر النهائي: ${product.price - product.discount} ريال</p>
+                            </div>
+                            <button onclick="buyProduct(${product.id})" class="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300">
+                                <i class="fas fa-shopping-cart ml-1"></i>
+                                شراء بالخصم
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // Populate lectures
+        function populateLectures() {
+            const videoLectures = document.getElementById('videoLectures');
+            if (videoLectures) {
+                videoLectures.innerHTML = database.lectures.map(lecture => `
+                    <div class="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition-colors">
+                        <div class="flex items-center">
+                            <div class="w-16 h-12 bg-${lecture.type === 'video' ? 'red' : 'purple'}-500 rounded flex items-center justify-center text-white text-xs font-semibold">
+                                ${lecture.type === 'video' ? `▶️ ${lecture.duration}` : '📄 PDF'}
+                            </div>
+                            <div class="mr-4 flex-1">
+                                <h4 class="font-semibold">${lecture.title}</h4>
+                                <p class="text-sm text-gray-600">${lecture.instructor}</p>
+                                <p class="text-xs text-gray-500">
+                                    ${lecture.type === 'video' ? `👁️ ${lecture.views} مشاهدة` : `📥 ${lecture.downloads} تحميل`}
+                                </p>
+                            </div>
+                            <div class="text-blue-500">
+                                <i class="fas fa-play-circle text-2xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // Populate courses
+        function populateCourses() {
+            const trainingCourses = document.getElementById('trainingCourses');
+            if (trainingCourses) {
+                trainingCourses.innerHTML = database.courses.map(course => `
+                    <div class="border rounded-lg p-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="font-semibold">${course.title}</h4>
+                            <span class="bg-${course.points > 0 ? 'blue' : 'green'}-100 text-${course.points > 0 ? 'blue' : 'green'}-800 px-2 py-1 rounded text-xs">
+                                ${course.points > 0 ? `${course.points} نقطة` : 'مجاني'}
+                            </span>
+                        </div>
+                        <p class="text-sm text-gray-600 mb-3">${course.description}</p>
+                        <div class="flex items-center justify-between">
+                            <div class="text-sm text-gray-500">
+                                <span><i class="fas fa-clock ml-1"></i>${course.duration}</span>
+                                <span class="mr-4"><i class="fas fa-users ml-1"></i>${course.students} متدرب</span>
+                            </div>
+                            <button onclick="enrollCourse(${course.id})" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-semibold transition-colors">
+                                <i class="fas fa-graduation-cap ml-1"></i>
+                                التسجيل
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // Initialize charts
+        function initializeCharts() {
+            // Vital Signs Chart
+            const vitalCtx = document.getElementById('vitalSignsChart');
+            if (vitalCtx) {
+                new Chart(vitalCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'],
+                        datasets: [{
+                            label: 'ضغط الدم (العلوي)',
+                            data: [135, 140, 138, 142, 139, 137, 140],
+                            borderColor: 'rgb(239, 68, 68)',
+                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                            tension: 0.4
+                        }, {
+                            label: 'النبض',
+                            data: [75, 78, 76, 80, 77, 74, 78],
+                            borderColor: 'rgb(59, 130, 246)',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: false
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Activity Chart
+            const activityCtx = document.getElementById('activityChart');
+            if (activityCtx) {
+                new Chart(activityCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['المشي', 'الراحة', 'التمارين', 'النوم'],
+                        datasets: [{
+                            data: [35, 25, 15, 25],
+                            backgroundColor: [
+                                'rgb(34, 197, 94)',
+                                'rgb(156, 163, 175)',
+                                'rgb(249, 115, 22)',
+                                'rgb(99, 102, 241)'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Utility functions
+        function getVitalColor(value, type) {
+            if (type === 'bp') {
+                const systolic = parseInt(value.split('/')[0]);
+                return systolic > 140 ? 'red' : systolic > 120 ? 'yellow' : 'green';
+            }
+            return 'blue';
+        }
+
+        function getStatusColor(status) {
+            switch (status) {
+                case 'عالي الخطورة': return 'red';
+                case 'مستقر': return 'green';
+                case 'ممتاز': return 'blue';
+                default: return 'gray';
+            }
+        }
+
+        function updatePointsDisplay() {
+            const pointsElements = ['healthPoints', 'storePoints', 'headerPoints'];
+            pointsElements.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.textContent = currentUser.points.toLocaleString();
+                }
+            });
+        }
+
+        // Interactive functions
+        function takeMedicine(medicineName) {
+            if (currentUserType !== 'patient') return;
+            
+            const medication = currentUser.medications.find(med => med.name === medicineName);
+            if (medication && !medication.taken) {
+                medication.taken = true;
+                currentUser.points += 5;
+                updatePointsDisplay();
+                
+                showNotification('✅ تم تسجيل تناول الدواء!', '+5 نقاط صحية', 'success');
+                
+                // Refresh medications display
+                populatePatientData();
+            }
+        }
+
+        function triggerEmergency() {
+            const emergencyAlert = document.getElementById('emergencyAlert');
+            const patientNameSpan = document.getElementById('emergencyPatientName');
+            
+            if (patientNameSpan) {
+                patientNameSpan.textContent = currentUser.name;
+            }
+            
+            if (emergencyAlert) {
+                emergencyAlert.classList.remove('hidden');
+                
+                // Auto-hide after 15 seconds
+                setTimeout(() => {
+                    emergencyAlert.classList.add('hidden');
+                }, 15000);
+            }
+            
+            showNotification('🚨 تم إرسال إشارة الطوارئ!', 'سيتم إشعار أقرب مستشفى والهلال الأحمر فوراً', 'error');
+        }
+
+        function buyProduct(productId) {
+            if (currentUserType !== 'patient') return;
+            
+            const product = database.products.find(p => p.id === productId);
+            if (!product) return;
+            
+            if (currentUser.points >= product.discount) {
+                const confirmed = confirm(`هل تريد شراء ${product.name}؟\n\nالسعر: ${product.price} ريال\nالخصم بالنقاط: ${product.discount} نقطة = ${product.discount} ريال\nالسعر النهائي: ${product.price - product.discount} ريال\n\nسيتم خصم ${product.discount} نقطة من رصيدك`);
+                
+                if (confirmed) {
+                    currentUser.points -= product.discount;
+                    updatePointsDisplay();
+                    showNotification('✅ تم الشراء بنجاح!', `تم خصم ${product.discount} نقطة. سيتم التوصيل خلال 2-3 أيام`, 'success');
+                }
+            } else {
+                showNotification('❌ رصيد النقاط غير كافي!', `تحتاج إلى ${product.discount - currentUser.points} نقطة إضافية`, 'error');
+            }
+        }
+
+        function enrollCourse(courseId) {
+            const course = database.courses.find(c => c.id === courseId);
+            if (!course) return;
+            
+            if (currentUserType === 'patient' && course.points > 0 && currentUser.points < course.points) {
+                showNotification('❌ رصيد النقاط غير كافي!', `تحتاج إلى ${course.points} نقطة للتسجيل`, 'error');
+                return;
+            }
+            
+            if (currentUserType === 'patient' && course.points > 0) {
+                currentUser.points -= course.points;
+                updatePointsDisplay();
+            }
+            
+            showNotification('✅ تم التسجيل بنجاح!', `في دورة "${course.title}". سيتم إرسال رابط الدورة على بريدك الإلكتروني`, 'success');
+        }
+
+        function addPost() {
+            const content = prompt('اكتب مشاركتك الجديدة:');
+            if (content && content.trim()) {
+                if (currentUserType === 'patient') {
+                    currentUser.points += 5;
+                    updatePointsDisplay();
+                }
+                showNotification('✅ تم إضافة مشاركتك بنجاح!', currentUserType === 'patient' ? '+5 نقاط للمشاركة في المجتمع' : 'شكراً لمساهمتك في المجتمع الطبي', 'success');
+            }
+        }
+
+        function startChat() {
+            showNotification('💬 جاري الاتصال بالطبيب...', 'د. فاطمة علي متاحة الآن للمحادثة المباشرة', 'info');
+        }
+
+        function downloadHealthFile() {
+            showNotification('📄 جاري تحضير الملف الصحي...', 'سيتم تحميل ملف PDF شامل لجميع بياناتك الطبية', 'info');
+        }
+
+        // Doctor functions
+        function viewPatientDetails(patientId) {
+            const patient = database.patients.find(p => p.id === patientId);
+            if (patient) {
+                alert(`تفاصيل المريض: ${patient.name}\n\nالعمر: ${patient.age} سنة\nفصيلة الدم: ${patient.bloodType}\nالحالات المزمنة: ${patient.conditions.join(', ') || 'لا يوجد'}\n\nالقراءات الحيوية:\nضغط الدم: ${patient.vitals.bp}\nالنبض: ${patient.vitals.pulse}\nالأكسجين: ${patient.vitals.oxygen}%\nالحرارة: ${patient.vitals.temp}°م\n\nالحالة العامة: ${patient.status}`);
+            }
+        }
+
+        function editMedications(patientId) {
+            const patient = database.patients.find(p => p.id === patientId);
+            if (patient) {
+                const newMedication = prompt(`تعديل أدوية المريض: ${patient.name}\n\nالأدوية الحالية:\n${patient.medications.map(med => `- ${med.name} ${med.dose} ${med.frequency}`).join('\n')}\n\nأدخل اسم الدواء الجديد:`);
+                
+                if (newMedication && newMedication.trim()) {
+                    showNotification('✅ تم تحديث الأدوية!', `تم إضافة ${newMedication} لقائمة أدوية المريض`, 'success');
+                }
+            }
+        }
+
+        function updateStatus(patientId) {
+            const patient = database.patients.find(p => p.id === patientId);
+            if (patient) {
+                const statuses = ['ممتاز', 'مستقر', 'عالي الخطورة'];
+                const currentIndex = statuses.indexOf(patient.status);
+                const newStatus = statuses[(currentIndex + 1) % statuses.length];
+                
+                patient.status = newStatus;
+                populateDoctorData();
+                showNotification('✅ تم تحديث حالة المريض!', `حالة ${patient.name}: ${newStatus}`, 'success');
+            }
+        }
+
+        // Notification system
+        function showNotification(title, message, type = 'info') {
+            const notifications = document.getElementById('notifications');
+            const notification = document.createElement('div');
+            
+            const colors = {
+                success: 'bg-green-500',
+                error: 'bg-red-500',
+                info: 'bg-blue-500',
+                warning: 'bg-yellow-500'
+            };
+            
+            notification.className = `notification ${colors[type]} text-white p-4 rounded-lg shadow-lg max-w-sm`;
+            notification.innerHTML = `
+                <div class="flex items-start">
+                    <div class="flex-1">
+                        <h4 class="font-semibold">${title}</h4>
+                        <p class="text-sm mt-1">${message}</p>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove()" class="text-white hover:text-gray-200 mr-2">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+            
+            notifications.appendChild(notification);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (notification.parentElement) {
+                    notification.remove();
+                }
+            }, 5000);
+        }
+
+        // Medication reminders
+        function startMedicationReminders() {
+            if (currentUserType !== 'patient') return;
+            
+            // Check for medication reminders every 30 seconds (for demo purposes)
+            setInterval(() => {
+                const unTakenMeds = currentUser.medications.filter(med => !med.taken);
+                if (unTakenMeds.length > 0) {
+                    const randomMed = unTakenMeds[Math.floor(Math.random() * unTakenMeds.length)];
+                    if (Math.random() < 0.1) { // 10% chance every 30 seconds
+                        showNotification('⏰ تذكير بالدواء!', `حان وقت تناول ${randomMed.name} - ${randomMed.dose}`, 'warning');
+                    }
+                }
+            }, 30000);
+        }
+
+        // Add some interactive enhancements
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add hover effects to navigation buttons
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.nav-btn')) {
+                    const btn = e.target.closest('.nav-btn');
+                    btn.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        btn.style.transform = 'scale(1)';
+                    }, 150);
+                }
             });
         });
-
-        console.log('🏥 Smart Health Card System Loaded');
-        console.log('📱 QR Code: https://qrco.de/bgEIlF');
-        console.log('💊 Medication reminders active');
-        console.log('🔔 Notifications enabled');
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9705072d535fcdfc',t:'MTc1NTM5MDI2MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97973407a22bf911',t:'MTc1NjkyMzAxOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
